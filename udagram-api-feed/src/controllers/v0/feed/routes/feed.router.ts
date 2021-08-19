@@ -4,6 +4,7 @@ import {NextFunction} from 'connect';
 import * as jwt from 'jsonwebtoken';
 import * as AWS from '../../../../aws';
 import * as c from '../../../../config/config';
+import {v4 as uuidv4} from 'uuid';
 
 const router: Router = Router();
 
@@ -28,6 +29,8 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 
 // Get all feed items
 router.get('/', async (req: Request, res: Response) => {
+  let pid = uuidv4();
+  console.log('TIME: ' + new Date().toLocaleString() + ` - ID: ${pid} - PROCESS: requesting for all feed items`);
   const items = await FeedItem.findAndCountAll({order: [['id', 'DESC']]});
   items.rows.map((item) => {
     if (item.url) {
@@ -35,29 +38,38 @@ router.get('/', async (req: Request, res: Response) => {
     }
   });
   res.send(items);
+  console.log('TIME: ' + new Date().toLocaleString() + ` - ID: ${pid} - PROCESS: all feed items sent`);
 });
 
 // Get a feed resource
 router.get('/:id',
     async (req: Request, res: Response) => {
+    let pid = uuidv4();
+    console.log('TIME: ' + new Date().toLocaleString() + ` - ID: ${pid} - PROCESS: requesting for one feed item`);
       const {id} = req.params;
       const item = await FeedItem.findByPk(id);
       res.send(item);
+      console.log('TIME: ' + new Date().toLocaleString() + ` - ID: ${pid} - PROCESS: feed item sent`);
     });
 
 // Get a signed url to put a new item in the bucket
 router.get('/signed-url/:fileName',
     requireAuth,
     async (req: Request, res: Response) => {
+    let pid = uuidv4();
+    console.log('TIME: ' + new Date().toLocaleString() + ` - ID: ${pid} - PROCESS: requesting signed url for the upload permission`);
       const {fileName} = req.params;
       const url = AWS.getPutSignedUrl(fileName);
       res.status(201).send({url: url});
+      console.log('TIME: ' + new Date().toLocaleString() + ` - ID: ${pid} - PROCESS: signed url sent`);
     });
 
 // Create feed with metadata
 router.post('/',
     requireAuth,
     async (req: Request, res: Response) => {
+    let pid = uuidv4();
+    console.log('TIME: ' + new Date().toLocaleString() + ` - ID: ${pid} - PROCESS: uploading image`);
       const caption = req.body.caption;
       const fileName = req.body.url; // same as S3 key name
 
@@ -78,6 +90,7 @@ router.post('/',
 
       savedItem.url = AWS.getGetSignedUrl(savedItem.url);
       res.status(201).send(savedItem);
+      console.log('TIME: ' + new Date().toLocaleString() + ` - ID: ${pid} - PROCESS: image uploaded`);
     });
 
 export const FeedRouter: Router = router;

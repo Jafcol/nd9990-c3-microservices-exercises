@@ -12,7 +12,7 @@ script:
 - docker tag udagram-frontend jafcol/udagram-frontend:v1
 - docker build -t reverseproxy ./reverseproxy
 - docker tag reverseproxy jafcol/reverseproxy:v1
-- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
 - docker push jafcol/udagram-api-feed:v1
 - docker push jafcol/udagram-api-user:v1
 - docker push jafcol/udagram-frontend:v1
